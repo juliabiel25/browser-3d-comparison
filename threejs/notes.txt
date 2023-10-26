@@ -1,0 +1,3 @@
+- jaka jest roznica miedzy importem z uzyciem impoortmap, a buildera
+- jakie są dostępne basic meshe dla poszczegolnych bibliotek
+- jak wygląda import (jakie formaty są obsługiwane? compatibility z blenderem, mayą, 3dmaxem, itd?)
