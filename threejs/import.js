@@ -1,8 +1,9 @@
 import * as THREE from "three";
-import WebGL from "three/addons/capabilities/WebGL.js";
-import Stats from "stats.js";
+
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
-M
+import Stats from "stats.js";
+import WebGL from "three/addons/capabilities/WebGL.js";
 
 // scene setup
 const scene = new THREE.Scene();
@@ -17,24 +18,33 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// creating geometry
-// const geometry = new THREE.BoxGeometry(1, 1, 1);
-// const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-// const cube = new THREE.Mesh(geometry, material);
-// scene.add(cube);
-const loader = new OBJLoader();
-// loader.load(
-//   "/grand_piano_test/grand_piano_import.obj",
-loader.load(
-  "/grand_piano_import_testing.obj",
-  function (object) {
-    scene.add(object);
-  },
-  undefined,
-  function (error) {
-    console.error(error);
-  }
-);
+
+new MTLLoader()
+		.setPath( 'low_poly_tree/' )
+		.load( 'Lowpoly_tree_sample.mtl', function ( materials ) {
+
+			materials.preload();
+
+			new OBJLoader()
+				.setMaterials( materials )
+				.setPath( 'low_poly_tree/' )
+				.load( 'Lowpoly_tree_sample.obj', 
+          // onSuccess
+          function ( object ) {
+            console.log(object)
+            scene.add( object );
+            console.log('SUCCESS')
+          }, 
+          // onProgress
+          function () {
+            console.log('...')
+          },
+          //onError
+          function (error) {
+            console.log('ERROR')
+          } 
+        );
+		} );
 
 camera.position.z = 5;
 
@@ -46,9 +56,6 @@ document.body.appendChild(stats.dom);
 // rendering the scene
 function animate() {
   requestAnimationFrame(animate);
-
-  // cube.rotation.x += 0.01;
-  // cube.rotation.y += 0.01;
 
   stats.begin();
   renderer.render(scene, camera);

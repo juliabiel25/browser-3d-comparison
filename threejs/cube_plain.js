@@ -1,6 +1,9 @@
 import * as THREE from "three";
-import WebGL from "three/addons/capabilities/WebGL.js";
+
 import Stats from "stats.js";
+import WebGL from "three/addons/capabilities/WebGL.js";
+
+console.log('Hello three.js')
 
 // scene setup
 const scene = new THREE.Scene();
