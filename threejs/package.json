@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "stats.js": "^0.17.0",
-    "three": "^0.157.0"
-  },
-  "devDependencies": {
-    "vite": "^4.5.0"
-  }
-}

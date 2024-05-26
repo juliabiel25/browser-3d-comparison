@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "rstatsjs": "^1.0.1",
+    "three": "^0.164.1"
+  }
+}

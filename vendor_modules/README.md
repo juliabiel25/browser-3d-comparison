@@ -1,0 +1,1 @@
+Since I'm not using a bundler I had to modify the threejs package import paths within these submodules

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>[Three.js] teapot</title>
+    <style>
+      body {
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000;
+      }
+    </style>
+    <base href="." />
+  </head>
+  <body>
+    <!-- helper module displaying for displaying FPS -->
+    <script src="../../node_modules/rstatsjs/src/rStats.js"></script>
+    <script src="../../node_modules/rstatsjs/src/rStats.extras.js"></script>
+
+    <!-- scene setup code -->
+    <script type="module">
+      import * as THREE from "../../node_modules/three/build/three.module.js";
+      import { GPUStatsPanel } from "../../node_modules/three/examples/jsm/utils/GPUStatsPanel.js";
+      import { GUI } from "../../node_modules/three/examples/jsm/libs/lil-gui.module.min.js";
+      import { OrbitControls } from "../../vendor_modules/three/examples/jsm/controls/OrbitControls.js";
+      import { TeapotGeometry } from "../../vendor_modules/three/examples/jsm/geometries/TeapotGeometry.js";
+
+      let scene;
+      let ambientLight;
+      let light;
+      let camera;
+      let renderer;
+      let teapot;
+      let stats;
+      let gpuPanel;
+      let controller;
+      let materials = {};
+      let triangles = 0;
+      let rS;
+
+      let size = 1;
+      let tessellation = 1;
+      let shading = "kolor";
+
+      init();
+      render();
+
+      function init() {
+        // scene setup
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(
+          75,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          1000
+        );
+        // renderer = new THREE.WebGL1Renderer({ antialias: true });
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        console.log("Is WebGL2? : ", renderer.capabilities.isWebGL2);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // LIGHTS
+        ambientLight = new THREE.AmbientLight(0x7c7c7c, 3.0);
+        light = new THREE.DirectionalLight(0xffffff, 3.0);
+        light.position.set(0.32, 0.39, 0.7);
+        scene.add(ambientLight);
+        scene.add(light);
+
+        // creating geometry
+        createTeapot();
+        scene.add(teapot);
+
+        camera.position.z = 5;
+
+        // setup rStats
+        rS = new rStats({
+          cssPath: "./rStats.css",
+          userTimingAPI: true,
+          values: {
+            frame: {
+              caption: "Total frame time (ms)",
+              over: 16,
+              // average: true,
+              avgMs: 100
+            },
+            fps: { caption: "Framerate (FPS)", below: 30 },
+            calls: { caption: "Calls (three.js)", over: 3000 },
+            raf: {
+              caption: "Time since last rAF (ms)",
+              // average: true,
+              avgMs: 100
+            },
+            rstats: { caption: "rStats update (ms)", average: true, avgMs: 100 }
+          },
+          groups: [
+            { caption: "Framerate", values: ["fps", "raf"] },
+            {
+              caption: "Frame Budget",
+              values: ["frame", "render"]
+            }
+          ]
+        });
+
+        console.log(
+          "Available extensions: ",
+          renderer.getContext().getSupportedExtensions()
+        );
+        gpuPanel = new GPUStatsPanel(renderer.getContext());
+
+        // GUI
+        setupGui();
+      }
+
+      function render() {
+        // WebGL compatibility check
+        if (window.WebGLRenderingContext) {
+          animate();
+        } else {
+          console.error(WebGl.getWebGLErrorMessage());
+        }
+      }
+
+      function updateSettings() {
+        if (
+          controller.tessellation !== tessellation ||
+          controller.size !== size ||
+          controller.shading !== shading
+        ) {
+          size = controller.size;
+          tessellation = controller.tessellation;
+          shading = controller.shading;
+
+          createTeapot();
+        }
+      }
+
+      function createTeapot() {
+        if (teapot !== undefined) {
+          teapot.geometry.dispose();
+          scene.remove(teapot);
+        }
+
+        const geometry = new TeapotGeometry(size, tessellation); // 395 tessalation - teacup stops showing up
+
+        materials["kolor"] = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        // materials['cieniowanie'] = new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } );
+        materials["cieniowanie"] = new THREE.MeshStandardMaterial({});
+        materials["tekstura"] = new THREE.MeshPhongMaterial({
+          side: THREE.DoubleSide
+        });
+
+        teapot = new THREE.Mesh(geometry, materials[shading]);
+        scene.add(teapot);
+      }
+
+      // rendering the scene
+      function animate() {
+        teapot.rotation.x += 0.05;
+        teapot.rotation.y += 0.05;
+
+        if (renderer.info.render.triangles !== triangles) {
+          console.log("Scene info : ", renderer.info.render);
+          triangles = renderer.info.render.triangles;
+        }
+
+        rS("frame").start();
+        rS("rAF").tick();
+        rS("FPS").frame();
+
+        rS("render").start();
+        renderer.render(scene, camera);
+        rS("render").end();
+
+        rS("frame").end();
+        rS("rStats update").start();
+        rS().update();
+        rS("rStats update").end();
+
+        requestAnimationFrame(animate);
+      }
+
+      function setupGui() {
+        controller = {
+          size: 1,
+          tessellation: 1,
+          shading: "kolor"
+        };
+
+        const gui = new GUI();
+        gui.add(controller, "size").name("Rozmiar").onChange(updateSettings);
+        gui
+          .add(controller, "tessellation")
+          .name("Poziom teselacji")
+          .onChange(updateSettings);
+        gui
+          .add(controller, "shading", ["kolor", "cieniowanie", "tekstura"])
+          .name("Cieniowanie")
+          .onChange(updateSettings);
+      }
+    </script>
+  </body>
+</html>
