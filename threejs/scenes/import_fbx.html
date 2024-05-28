@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>[Three.js] fbx import</title>
+    <style>
+      body {
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000;
+      }
+    </style>
+    <base href="." />
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "../../node_modules/three/build/three.module.js",
+          "three/addons/": "../../node_modules/three/examples/jsm/"
+        }
+      }
+    </script>
+
+    <!-- helper module displaying for displaying FPS -->
+    <script src="../../node_modules/rstatsjs/src/rStats.js"></script>
+    <script src="../../node_modules/rstatsjs/src/rStats.extras.js"></script>
+
+    <!-- scene setup code -->
+    <script type="module">
+      import * as THREE from "three";
+      import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+      import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+      // scene setup
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      // renderer.setClearColor(0xeeeeee);
+      document.body.appendChild(renderer.domElement);
+
+      // loading glTF model
+      const fbxLoader = new FBXLoader();
+
+      const url =
+        "../../models/models/shapesparkRoom/shapespark-example-room.fbx";
+      // "../../filament/models/AnimatedTriangle/AnimatedTriangle.gltf";
+      // const url =
+      // Load a glTF resource
+      fbxLoader.load(
+        url,
+        // called when the resource is loaded
+        function (fbx) {
+          scene.add(fbx);
+
+          fbx.animations; // Array<THREE.AnimationClip>
+          fbx.scene; // THREE.Group
+          fbx.scenes; // Array<THREE.Group>
+          fbx.cameras; // Array<THREE.Camera>
+          fbx.asset; // Object
+        },
+        // called while loading is progressing
+        function (xhr) {
+          console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+        },
+        // called when loading has errors
+        function (error) {
+          console.log("An error happened");
+        }
+      );
+
+      camera.position.z = 150;
+      camera.rotation.x = 1.3;
+      // camera.rotation.z = 45;
+
+      // Add ambient light
+      var ambientLight = new THREE.AmbientLight(0xcccccc, 0.4);
+      scene.add(ambientLight);
+
+      // Add directional light
+      // var directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      // directionalLight.position.set(1, 1, 1).normalize(); // set the direction of the light
+      // scene.add(directionalLight);
+
+      // setup rStats
+      const rS = new rStats({
+        cssPath: "./rStats.css",
+        userTimingAPI: true,
+        values: {
+          frame: {
+            caption: "Total frame time (ms)",
+            over: 16,
+            // average: true,
+            avgMs: 100
+          },
+          fps: { caption: "Framerate (FPS)", below: 30 },
+          calls: { caption: "Calls (three.js)", over: 3000 },
+          raf: {
+            caption: "Time since last rAF (ms)",
+            // average: true,
+            avgMs: 100
+          },
+          rstats: { caption: "rStats update (ms)", average: true, avgMs: 100 }
+        },
+        groups: [
+          { caption: "Framerate", values: ["fps", "raf"] },
+          {
+            caption: "Frame Budget",
+            values: ["frame", "render"]
+          }
+        ]
+      });
+
+      // rendering the scene
+      function animate() {
+        // cube.rotation.x += 0.01;
+        // cube.rotation.y += 0.01;
+
+        camera.rotation.y += 0.001;
+
+        rS("frame").start();
+        rS("rAF").tick();
+        rS("FPS").frame();
+
+        rS("render").start();
+        renderer.render(scene, camera);
+        rS("render").end();
+
+        rS("frame").end();
+        rS("rStats update").start();
+        rS().update();
+        rS("rStats update").end();
+
+        requestAnimationFrame(animate);
+      }
+
+      // WebGL compatibility check
+      if (window.WebGLRenderingContext) {
+        animate();
+      } else {
+        console.error("WebGL is not supported");
+      }
+    </script>
+  </body>
+</html>
