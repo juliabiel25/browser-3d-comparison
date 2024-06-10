@@ -1,2 +1,5 @@
 /node_modules
-/models
+*/models/*
+.env.local
+/filament/filament-v1.45.0-web
+/_filament/filament-v1.45.0-web
