@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Three.js] Performance Monitor</title>
+    <style>
+      body {
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: pink !important;
+      }
+      .performance-stats {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        z-index: 1000;
+      }
+    </style>
+    <base href="." />
+  </head>
+  <body>
+    <button id="downloadReport">DOWNLOAD PERFORMANCE REPORT</button>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "../../node_modules/three/build/three.module.js",
+          "three/addons/": "../../node_modules/three/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="./render_gltf.js"></script>
+    <script type="module" src="./performanceMonitor.js"></script>
+  </body>
+</html>

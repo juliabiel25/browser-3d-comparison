@@ -32,6 +32,19 @@
       import * as THREE from "three";
       import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
       import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+
+      // HARDWARE INFO
+      const OPERATING_SYSTEM = "Windows 11";
+      const CPU = "12th Gen Intel(R) Core(TM) i5-1245U";
+      const NUM_OF_CORES = "10";
+      const NUM_OF_LOGICAL_PROCESSORS = "12";
+      const MAX_CLOCK_SPEED = "1600";
+      const GPU = "Intel(R) Iris(R) Xe Graphics";
+      const GPU_RAM = "1GB";
+      const RAM = "32GB";
+      const RAM_SPEED = "3200";
+      const DIRECTX_VERSION = "12";
+
       // scene setup
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(
@@ -53,10 +66,13 @@
       dracoLoader.setDecoderPath("three/addons/libs/draco/");
       gltfLoader.setDRACOLoader(dracoLoader);
 
-      const url =
-        "../../models/models/shapesparkRoom/shapespark-example-room.gltf";
-      // "../../filament/models/AnimatedTriangle/AnimatedTriangle.gltf";
-      // const url =
+      const url = "../../models/_GLTF/shapespark-example-room.gltf";
+      // "../../models/_GLTF/diner.gltf";
+      // "../../models/_GLTF/flowering.gltf";
+      // "../../models/_GLTF/radio.gltf";
+      // "../../models/_GLTF/sphere-bot-baked-animations.gltf";
+      // "../../models/_GLTF/Willow_Tree.gltf";
+
       // Load a glTF resource
       gltfLoader.load(
         url,
@@ -118,6 +134,10 @@
           }
         ]
       });
+
+      let data = [];
+      let lastTime = performance.now();
+      let frameCount = 0;
 
       // rendering the scene
       function animate() {

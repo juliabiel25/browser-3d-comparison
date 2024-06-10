@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Three.js] Performance Monitor</title>
+    <style>
+      body {
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: pink !important;
+      }
+      .performance-stats {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        z-index: 1000;
+      }
+    </style>
+    <base href="." />
+  </head>
+  <body>
+    <button id="downloadReport">DOWNLOAD PERFORMANCE REPORT</button>
+
+    <div class="performance-stats" id="performance-stats"></div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "../../node_modules/three/build/three.module.js",
+          "three/addons/": "../../node_modules/three/examples/jsm/"
+        }
+      }
+    </script>
+
+    <!-- scene setup code -->
+    <script type="module">
+      import * as THREE from "three";
+      import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+      import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+
+      // setup event listeners for the buttons
+      document
+        .getElementById("downloadReport")
+        .addEventListener("click", generateReport);
+
+      // Scene setup
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0xeeeeee);
+      document.body.appendChild(renderer.domElement);
+
+      // Loading glTF model
+      const gltfLoader = new GLTFLoader();
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath("three/addons/libs/draco/");
+      gltfLoader.setDRACOLoader(dracoLoader);
+
+      const url = "../../models/_GLTF/shapespark-example-room.gltf";
+      gltfLoader.load(
+        url,
+        function (gltf) {
+          scene.add(gltf.scene);
+        },
+        function (xhr) {
+          console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+        },
+        function (error) {
+          console.log("An error happened");
+        }
+      );
+
+      camera.position.z = 5;
+      const ambientLight = new THREE.AmbientLight(0xcccccc, 0.4);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      directionalLight.position.set(1, 1, 1).normalize();
+      scene.add(directionalLight);
+
+      // Performance monitoring variables
+      let perfData = [];
+      let frameCount = 0;
+      let fps, frameTime, drawCalls;
+      let lastTime = performance.now();
+      const performanceStatsDiv = document.getElementById("performance-stats");
+
+      function updatePerformanceStats() {
+        const currentTime = performance.now();
+        const delta = currentTime - lastTime;
+        frameCount++;
+
+        if (delta >= 1000) {
+          fps = (frameCount / delta) * 1000;
+          frameTime = delta / frameCount;
+          const { calls, triangles, points, lines, frame } =
+            renderer.info.render;
+          const { geometries, textures } = renderer.info.memory;
+          const memoryUsed = (
+            performance.memory.usedJSHeapSize /
+            (1024 * 1024)
+          ).toFixed(2); //in MB
+          const memoryAllocated = (
+            performance.memory.totalJSHeapSize /
+            (1024 * 1024)
+          ).toFixed(2);
+          perfData = [
+            ...perfData,
+            {
+              time: currentTime,
+              fps: fps.toFixed(2),
+              frameTime: frameTime.toFixed(2),
+              drawCalls: calls,
+              triangles,
+              points,
+              lines,
+              frame,
+              geometries,
+              textures,
+              memoryUsed,
+              memoryAllocated
+            }
+          ];
+
+          // Reset frame count and last time
+          frameCount = 0;
+          lastTime = currentTime;
+        }
+
+        requestAnimationFrame(updatePerformanceStats);
+      }
+
+      function generateReport() {
+        // Convert array of objects to a CSV string
+        const csvData = [
+          "timeDelta[ms];fps;frameTime;drawCalls;triangles;points;lines;frame;geometries;textures;memoryUsed[MB];memoryAllocated[MB]",
+          ...perfData.map(item => Object.values(item).join(";"))
+        ].join("\n");
+
+        // Create a Blob with the CSV data
+        const blob = new Blob([csvData], { type: "text/csv" });
+
+        // Create a temporary URL for the Blob
+        const url = URL.createObjectURL(blob);
+
+        // Create a link element
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "performance_data.csv"; // Name of the downloadable file
+
+        // Append the link to the document body and trigger a click event
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up by revoking the URL
+        URL.revokeObjectURL(url);
+      }
+
+      updatePerformanceStats();
+
+      // Rendering the scene
+      function animate() {
+        camera.rotation.y += 0.01;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      if (window.WebGLRenderingContext) {
+        animate();
+      } else {
+        console.error("WebGL is not supported");
+      }
+    </script>
+  </body>
+</html>
