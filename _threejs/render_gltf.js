@@ -1,7 +1,10 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
-import { initializePerformanceMonitor } from "./performanceMonitor.js";
+import {
+  initializePerformanceMonitor,
+  updatePerformanceStats
+} from "../performanceMonitor.js";
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -17,7 +20,14 @@ renderer.setClearColor(0xeeeeee);
 document.body.appendChild(renderer.domElement);
 
 // initialize the renderer performance monitor
-initializePerformanceMonitor(renderer, true);
+initializePerformanceMonitor(true, [
+  "drawCalls",
+  "triangles",
+  "lines",
+  "points",
+  "geometries",
+  "textures"
+]);
 
 // Loading glTF model
 const gltfLoader = new GLTFLoader();
@@ -51,6 +61,18 @@ scene.add(directionalLight);
 function animate() {
   camera.rotation.y += 0.01;
   renderer.render(scene, camera);
+  requestAnimationFrame(() => {
+    const { calls, triangles, points, lines } = renderer.info.render;
+    const { geometries, textures } = renderer.info.memory;
+    updatePerformanceStats({
+      drawCalls: calls,
+      triangles,
+      lines,
+      points,
+      geometries,
+      textures
+    });
+  });
   requestAnimationFrame(animate);
 }
 

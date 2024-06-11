@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Babylon.js Scene</title>
+    <style>
+      html,
+      body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+      #downloadReport {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        z-index: 100;
+        padding: 30px;
+        background-color: #333;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      #performanceStats {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        z-index: 1000;
+      }
+    </style>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+  </head>
+  <body>
+    <button id="downloadReport">DOWNLOAD PERFORMANCE REPORT</button>
+    <div id="performanceStats"></div>
+    <canvas id="renderCanvas"></canvas>
+    <script type="module" src="../performanceMonitor.js"></script>
+    <script type="module" src="./render_gltf.js"></script>
+  </body>
+</html>

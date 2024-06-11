@@ -9,9 +9,8 @@
         margin: 0;
         width: 100vw;
         height: 100vh;
-        background-color: pink !important;
       }
-      .performance-stats {
+      #performanceStats {
         position: fixed;
         bottom: 0;
         left: 0;
@@ -27,6 +26,7 @@
   </head>
   <body>
     <button id="downloadReport">DOWNLOAD PERFORMANCE REPORT</button>
+    <div id="performanceStats"></div>
     <script type="importmap">
       {
         "imports": {
@@ -36,6 +36,6 @@
       }
     </script>
     <script type="module" src="./render_gltf.js"></script>
-    <script type="module" src="./performanceMonitor.js"></script>
+    <script type="module" src="../performanceMonitor.js"></script>
   </body>
 </html>
