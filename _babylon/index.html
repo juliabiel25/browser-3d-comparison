@@ -11,6 +11,8 @@
         height: 100%;
         margin: 0;
         padding: 0;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
       }
 
       #renderCanvas {
@@ -28,6 +30,8 @@
         color: white;
         border: none;
         cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
       }
       #performanceStats {
         position: fixed;
@@ -36,9 +40,32 @@
         background: rgba(0, 0, 0, 0.5);
         color: white;
         padding: 10px;
+        z-index: 1000;
         font-family: Arial, sans-serif;
         font-size: 12px;
-        z-index: 1000;
+      }
+      #fileInputContainer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 100;
+        padding: 30px;
+        background-color: #333;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+      }
+      #fileInput {
+        color: white;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background-color: none;
+        background: none;
+        margin-top: 10px;
+        border-radius: 4px;
       }
     </style>
     <script src="https://preview.babylonjs.com/babylon.js"></script>
@@ -47,6 +74,7 @@
   <body>
     <button id="downloadReport">DOWNLOAD PERFORMANCE REPORT</button>
     <div id="performanceStats"></div>
+    </div>
     <canvas id="renderCanvas"></canvas>
     <script type="module" src="../performanceMonitor.js"></script>
     <script type="module" src="./render_gltf.js"></script>

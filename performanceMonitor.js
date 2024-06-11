@@ -15,12 +15,12 @@ export function initializePerformanceMonitor(
   displayMonitorData = displayStats;
   rendererPerfDataKeys = dataKeys;
 
-  // setup event listeners for the buttons
+  // setup event listeners for the download button
   document
     .getElementById("downloadReport")
     .addEventListener("click", generateReport);
 
-  // Schedule report generation
+  // Schedule automatic report generation
   setInterval(generateReport, reportInterval * 60 * 1000);
 }
 

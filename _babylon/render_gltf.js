@@ -2,7 +2,12 @@ import {
   initializePerformanceMonitor,
   updatePerformanceStats
 } from "../performanceMonitor.js";
+import { FOLDER_PATH, FILENAME } from "../constants.js";
+
+// map out relevant dom elements
 var canvas = document.getElementById("renderCanvas");
+
+// setup BABYLON scene
 var engine = new BABYLON.Engine(canvas, true);
 
 var createScene = function () {
@@ -25,10 +30,11 @@ var createScene = function () {
   );
   light.intensity = 0.7;
 
+  console.log("Selected file: ", FOLDER_PATH, FILENAME);
   BABYLON.SceneLoader.ImportMesh(
     "",
-    "../models/_GLTF/",
-    "shapespark-example-room.gltf",
+    FOLDER_PATH,
+    FILENAME,
     scene,
     function (newMeshes) {
       camera.target = newMeshes[0];
@@ -40,7 +46,7 @@ var createScene = function () {
 
 var scene = createScene();
 
-// Instrumentation to get draw calls and triangles count
+// Setup instrumentation to get stats provided by babylon
 const instrumentation = new BABYLON.EngineInstrumentation(engine);
 instrumentation.captureGPUFrameTime = true;
 instrumentation.captureShaderCompilationTime = true;
