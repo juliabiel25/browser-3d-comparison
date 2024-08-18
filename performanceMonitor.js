@@ -9,7 +9,7 @@ let rendererPerfDataKeys = [];
 export function initializePerformanceMonitor(
   displayStats = true,
   dataKeys = [],
-  reportInterval = 5
+  reportInterval = 5 // in minutes
 ) {
   console.log("Initializing performance monitor");
   displayMonitorData = displayStats;

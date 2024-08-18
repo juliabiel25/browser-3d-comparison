@@ -3,3 +3,5 @@
 models/
 /filament/filament-v1.45.0-web
 /_filament/filament-v1.45.0-web
+/.venv
+/.vite
