@@ -2,7 +2,7 @@ import {
   initializePerformanceMonitor,
   updatePerformanceStats
 } from "../performanceMonitor.js";
-import { FOLDER_PATH, FILENAME, CAMERA_RADIUS, ORIGIN_HEIGHT, CAMERA_HEIGHT, IMPORT_MATERIALS, IMPORT_LIGHTS } from "../constants.js";
+import { FOLDER_PATH, FILENAME, CAMERA_RADIUS, ORIGIN_HEIGHT, CAMERA_HEIGHT, IMPORT_MATERIALS, IMPORT_LIGHTS, DISPLAY_STATS } from "../constants.js";
 let defaultMaterial = null; // Default material for meshes
 
 // map out relevant dom elements
@@ -108,7 +108,7 @@ sceneInstrumentation.captureDrawCalls = true;
 sceneInstrumentation.captureRenderTime = true;
 sceneInstrumentation.captureShaderCompilationTime = true;
 
-initializePerformanceMonitor(false, [
+initializePerformanceMonitor(DISPLAY_STATS, [
   "fps",
   "drawCalls",
   "frameTime",

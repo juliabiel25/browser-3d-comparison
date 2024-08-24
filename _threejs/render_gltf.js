@@ -12,7 +12,8 @@ import {
   ORIGIN_HEIGHT,
   CAMERA_HEIGHT,
   IMPORT_MATERIALS,
-  IMPORT_LIGHTS
+  IMPORT_LIGHTS,
+  DISPLAY_STATS
 } from "../constants.js";
 
 // variables
@@ -101,7 +102,7 @@ gltfLoader.load(
 );
 
 // initialize the renderer performance monitor
-initializePerformanceMonitor(false, PERFORMANCE_KEYS, 5);
+initializePerformanceMonitor(DISPLAY_STATS, PERFORMANCE_KEYS, 5);
 
 // Rendering the scene
 function animate() {
