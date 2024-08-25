@@ -2,8 +2,10 @@ import {
   initializePerformanceMonitor,
   updatePerformanceStats
 } from "../performanceMonitor.js";
-import { FOLDER_PATH, FILENAME, CAMERA_RADIUS, ORIGIN_HEIGHT, CAMERA_HEIGHT, IMPORT_MATERIALS, IMPORT_LIGHTS, DISPLAY_STATS } from "../constants.js";
+import { FOLDER_PATH, FILENAME, CAMERA_RADIUS, ORIGIN_HEIGHT, CAMERA_HEIGHT, IMPORT_MATERIALS, IMPORT_LIGHTS, DISPLAY_STATS, INCREMENT_MESHES } from "../constants.js";
 let defaultMaterial = null; // Default material for meshes
+let geometryMesh = null; // Mesh to store teapot geometry
+let sceneRenderTime = 0.0; // Scene render time
 
 // map out relevant dom elements
 const canvas = document.getElementById("renderCanvas");
@@ -74,10 +76,15 @@ const createScene = function () {
     scene,
     // on successful load:
     function (scene) {      
+      scene.meshes.forEach(function(mesh) {
+        geometryMesh = mesh;
+      });
+
       if (defaultMaterial) {  
         // Assign default material to meshes
         scene.meshes.forEach(function(mesh) {
           mesh.material = defaultMaterial;
+
         });
       }
     }
@@ -89,6 +96,26 @@ const createScene = function () {
 // call the createScene function
 const scene = createScene();
 
+// Add a new instance of the geometry every 6 seconds
+function addGeometryInstance() {
+  if (geometryMesh) {
+    // Clone the geometry mesh
+    const newMesh = geometryMesh.clone(geometryMesh.name + "_clone");
+
+    newMesh.position = new BABYLON.Vector3(
+      Math.random() * 10 - 5,
+      Math.random() * 10 - 5,
+      Math.random() * 10 - 5
+    );
+
+    // Add the new mesh to the scene
+    scene.addMesh(newMesh);
+  }
+}
+if (INCREMENT_MESHES) {
+  setInterval(addGeometryInstance, 1000);
+}
+
 // Setup instrumentation to get stats provided by babylon
 const instrumentation = new BABYLON.EngineInstrumentation(engine);
 instrumentation.captureGPUFrameTime = true;
@@ -98,52 +125,46 @@ const sceneInstrumentation = new BABYLON.SceneInstrumentation(scene);
 sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
 sceneInstrumentation.captureRenderTargetsRenderTime = true;
 sceneInstrumentation.captureFrameTime = true;
+sceneInstrumentation.captureDrawCalls = true;
 sceneInstrumentation.captureInterFrameTime = true;
 sceneInstrumentation.captureParticlesRenderTime = true;
 sceneInstrumentation.captureSpritesRenderTime = true;
 sceneInstrumentation.capturePhysicsTime = true;
 sceneInstrumentation.captureAnimationsTime = true;
 sceneInstrumentation.captureCameraRenderTime = true;
-sceneInstrumentation.captureDrawCalls = true;
-sceneInstrumentation.captureRenderTime = true;
 sceneInstrumentation.captureShaderCompilationTime = true;
 
-initializePerformanceMonitor(DISPLAY_STATS, [
-  "fps",
-  "drawCalls",
-  "frameTime",
-  "renderTime",
-  "gpuFrameTimeCounter",
-  "averageGpuFrameTime"
-]);
+initializePerformanceMonitor(DISPLAY_STATS, 5);
 
-scene.registerBeforeRender(function () {
+engine.runRenderLoop(function () {
+
+  const beforeSceneRender = performance.now();
+  scene.render();
+  sceneRenderTime = performance.now()-beforeSceneRender;
+
+   // Update the camera's alpha property to rotate around the target
+  scene.activeCamera.alpha += 0.01; // Adjust the speed of rotation as needed
+
+  // record performance data
   const fps = engine.getFps().toFixed(2);
   const drawCalls = sceneInstrumentation.drawCallsCounter.current;
   const frameTime = sceneInstrumentation.frameTimeCounter.current;
-  const renderTime = sceneInstrumentation.renderTimeCounter.current;
-  // const shaderCompilationTime = sceneInstrumentation.shaderCompilationTimeCounter.current;
   const gpuFrameTimeCounter = instrumentation.gpuFrameTimeCounter.current;
   const averageGpuFrameTime = instrumentation.gpuFrameTimeCounter.average;
-
   updatePerformanceStats({
     fps,
     drawCalls,
     frameTime,
-    renderTime,
+    sceneRenderTime,
     gpuFrameTimeCounter,
     averageGpuFrameTime
   });
-});
-
-engine.runRenderLoop(function () {
-  scene.render();
-
-   // Update the camera's alpha property to rotate around the target
-  scene.activeCamera.alpha += 0.01; // Adjust the speed of rotation as needed
 
 });
 
 window.addEventListener("resize", function () {
   engine.resize();
 });
+
+
+

@@ -1,19 +1,18 @@
-let perfData = [];
+import { FILE } from "./constants.js";
+
+let perfDataArchive = [];
 let frameCount = 0;
 let fps = 0.0,
   frameTime = 0.0;
 let lastTime = performance.now();
 let displayMonitorData = false;
-let rendererPerfDataKeys = [];
 
 export function initializePerformanceMonitor(
   displayStats = true,
-  dataKeys = [],
   reportInterval = 5 // in minutes
 ) {
   console.log("Initializing performance monitor");
   displayMonitorData = displayStats;
-  rendererPerfDataKeys = dataKeys;
 
   // setup event listeners for the download button
   document
@@ -24,11 +23,13 @@ export function initializePerformanceMonitor(
   setInterval(generateReport, reportInterval * 60 * 1000);
 }
 
+// get measurements not directly provided by the rendering engine
 export function updatePerformanceStats(rendererPerfData) {
   const currentTime = performance.now();
   const delta = currentTime - lastTime;
   frameCount++;
 
+  // record number of frames every second
   if (delta >= 1000) {
     fps = (frameCount / delta) * 1000;
     frameTime = delta / frameCount;
@@ -41,34 +42,26 @@ export function updatePerformanceStats(rendererPerfData) {
       (1024 * 1024)
     ).toFixed(2); //in MB
 
-    perfData = [
-      ...perfData,
-      {
-        time: currentTime,
-        fpslocal: fps.toFixed(2),
-        frameTime: frameTime.toFixed(2),
-        memoryUsed,
-        memoryAllocated,
-        ...rendererPerfData
-      }
-    ];
+    const perfData = {
+      timestamp: currentTime,
+      fpsManual: fps.toFixed(2),
+      frameTime: frameTime.toFixed(2),
+      memoryUsed,
+      memoryAllocated,
+      ...rendererPerfData
+    };
 
     // Update display with current performance data
     if (displayMonitorData) {
       const performanceStatsDiv = document.querySelector("#performanceStats");
       const statsHtml =
-        `
-        <p>FPS: ${fps.toFixed(2)}</p>
-        <p>Frame Time: ${frameTime.toFixed(2)} ms</p>
-        <p>Memory Used: ${memoryUsed} MB</p>
-        <p>Memory Allocated: ${memoryAllocated} MB</p>
-        <hr>
-      ` +
-        rendererPerfDataKeys
-          .map(key => `<p>${key}: ${rendererPerfData[key]}</p>`)
+        Object.keys(perfData)
+          .map(key => `<p>${key}: ${perfData[key]}</p>`)
           .join("");
       performanceStatsDiv.innerHTML = statsHtml;
     }
+
+    perfDataArchive.push(perfData);
 
     // Reset frame count and last time
     frameCount = 0;
@@ -77,10 +70,10 @@ export function updatePerformanceStats(rendererPerfData) {
 }
 
 export function generateReport() {
+  const perfDataKeys = Object.keys(perfDataArchive[0]);
   const csvData = [
-    "fps;frame time;memory used; memory allocated;" +
-      rendererPerfDataKeys.join(";"),
-    ...perfData.map(item => Object.values(item).join(";"))
+    perfDataKeys.join(';'),
+    ...perfDataArchive.map(record => perfDataKeys.map(key => record[key]).join(';'))
   ].join("\n");
 
   // Create a Blob with the CSV data
@@ -92,7 +85,7 @@ export function generateReport() {
   // Create a link element
   const link = document.createElement("a");
   link.href = url;
-  link.download = "performance_data.csv"; // Name of the downloadable file
+  link.download = FILE + "_code.csv"; // Name of the downloadable file
 
   // Append the link to the document body and trigger a click event
   document.body.appendChild(link);

@@ -2,7 +2,8 @@
 export const FOLDER_PATH = "../../models/_GLTF/teapot/";
 // export const FILENAME = "planet.gltf";
 // export const FILENAME = "scene-lights.gltf";
-export const FILENAME = "teapot-6.gltf";
+export const FILE = "teapot-0";
+export const FILENAME = FILE+".gltf";
 
 // for manually supressing fps to run script in V-sync disabled environment
 // without overloading cpu
@@ -21,6 +22,7 @@ export const CAMERA_HEIGHT = 3;
 // export const CAMERA_HEIGHT = 1.5;
 
 
-export const DISPLAY_STATS = true;
+export const DISPLAY_STATS = false;
  export const IMPORT_LIGHTS = true;
  export const IMPORT_MATERIALS = true;
+export const INCREMENT_MESHES = false;

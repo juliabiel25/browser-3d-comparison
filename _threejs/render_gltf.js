@@ -13,30 +13,20 @@ import {
   CAMERA_HEIGHT,
   IMPORT_MATERIALS,
   IMPORT_LIGHTS,
-  DISPLAY_STATS
+  DISPLAY_STATS,
+  INCREMENT_MESHES
 } from "../constants.js";
 
 // variables
 let angle = 0; // Initial animation angle
 let defaultMaterial = null; // Default material for meshes
-let then = performance.now(), frames = 0, fps = 0; // initial performance stats values
-const PERFORMANCE_KEYS = [
-  "timestamp",
-  "fps",
-  "frameRenderTime",
-  "drawCalls",
-  "triangles",
-  "lines",
-  "points",
-  "geometries",
-  "textures",
-];
+let geometryMesh = null; // Mesh to store teapot geometry
+let then = performance.now(), frames = 0, fps = 0; // initial performance stats values;
 
 // setup threejs renderer
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x33334c);
-// renderer.setClearColor(0xeeeeee);
 renderer.gammaOutput = true; // Enable gamma correction for the renderer
 renderer.gammaFactor = 2.2; // Common gamma factor
 
@@ -89,6 +79,13 @@ gltfLoader.load(
   function (gltf) {
     scene.add(gltf.scene);
     
+    gltf.scene.traverse((child) => {
+      if (child.isMesh) {
+        // Save the geometry mesh for later use
+        geometryMesh = child;
+      }
+    });
+
     // Assign default material to meshes
     if (!IMPORT_MATERIALS)  {
       gltf.scene.traverse((child) => {
@@ -101,19 +98,37 @@ gltfLoader.load(
   }
 );
 
+
+// Add a new instance of the teapot geometry every 6 seconds
+function addGeometryInstance() {
+  if (geometryMesh) {
+    // Clone the geometry mesh
+    const newMesh = geometryMesh.clone();
+
+    // Set a random position for the new mesh
+    newMesh.position.set(
+      Math.random() * 10 - 5,
+      Math.random() * 10 - 5,
+      Math.random() * 10 - 5
+    );
+
+    // Add the new mesh to the scene
+    scene.add(newMesh);
+  }
+}
+if (INCREMENT_MESHES) {
+  setInterval(addGeometryInstance, 100);
+}
+
 // initialize the renderer performance monitor
-initializePerformanceMonitor(DISPLAY_STATS, PERFORMANCE_KEYS, 5);
+initializePerformanceMonitor(DISPLAY_STATS, 5);
 
 // Rendering the scene
 function animate() {
   requestAnimationFrame(animate);
 
   const now = performance.now();
-  // const elapsed = now - then;
-
-  // if (elapsed > FPS_INTERVAL) {
-    // then = now - (elapsed % FPS_INTERVAL);
-
+  
     // Update camera position
     angle += 0.01; // Speed of rotation
     camera.position.x = CAMERA_RADIUS * Math.sin(angle);
@@ -134,7 +149,6 @@ function animate() {
     });
 
     renderer.render(scene, camera);
-  // }
 }
 
 if (window.WebGLRenderingContext) {
